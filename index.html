@@ -162,5 +162,38 @@ const targetCities = {
     loadMap();
     fetchAttackData();
   </script>
+  <script>
+  let currentIndex = 0;
+  let isPlaying = true;
+
+  function getRandomTarget() {
+    return [
+      (Math.random() * 180 - 90).toFixed(4),
+      (Math.random() * 360 - 180).toFixed(4)
+    ];
+  }
+
+  function animateAttacks() {
+    if (!isPlaying) return;
+
+    for (let i = 0; i < 3; i++) {
+      const attack = attacks[(currentIndex + i) % attacks.length];
+      if (attack) {
+        const target = (attack.targetLat && attack.targetLon)
+          ? [parseFloat(attack.targetLat), parseFloat(attack.targetLon)]
+          : getRandomTarget();
+
+        drawAttack([attack.lat, attack.lon], target, attack.port);
+        logToTerminal(`Attack from ${attack.ip} → [${target[0]}, ${target[1]}] on port ${attack.port}`);
+      }
+    }
+
+    currentIndex = (currentIndex + 3) % attacks.length;
+  }
+
+  // Beispiel: wiederhole alle 1500ms
+  setInterval(animateAttacks, 1500);
+</script>
+
 </body>
 </html>
