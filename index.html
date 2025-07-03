@@ -20,10 +20,41 @@
 <body>
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  </script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  let attacks = [];
+  let index = 0;
+
+  function drawAttack(atk) {
+    const from = [atk.lat, atk.lon];
+    const to = [atk.lat + 2, atk.lon + 2]; // kleiner Offset als Ziel
+
+    L.polyline([from, to], { color: 'red', weight: 2, opacity: 0.5 }).addTo(map);
+
+    L.circleMarker(from, {
+      radius: 6,
+      color: 'red',
+      fillOpacity: 0.7
+    }).addTo(map);
+  }
+
+  function nextAttack() {
+    if (attacks.length === 0) return;
+    drawAttack(attacks[index]);
+    index = (index + 1) % attacks.length;
+  }
+
+  fetch('attack-data.json')
+    .then(r => r.json())
+    .then(data => {
+      attacks = data;
+      setInterval(nextAttack, 2000);
+    })
+    .catch(e => console.error('Lade Fehler:', e));
+</script>
+
 </body>
 </html>
