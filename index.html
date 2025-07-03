@@ -24,36 +24,33 @@
   const map = L.map('map').setView([20, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  const targetCities = {
-    22: [52.52, 13.405],      // Berlin (SSH)
-    80: [48.8566, 2.3522],    // Paris (HTTP)
-    443: [51.5074, -0.1278],  // London (HTTPS)
-    3306: [50.1109, 8.6821],  // Frankfurt (MySQL)
-    23: [55.7558, 37.6173],   // Moskau (Telnet)
-    default: [40.7128, -74.0060] // New York (fallback)
-  };
-
   let attacks = [];
   let index = 0;
   let isPlaying = true;
 
-  function getTarget(port) {
-    return targetCities[port] || targetCities.default;
+  function getRandomTargetCoords() {
+    const lat = (Math.random() * 180 - 90).toFixed(4);   // -90 bis +90
+    const lon = (Math.random() * 360 - 180).toFixed(4);  // -180 bis +180
+    return [parseFloat(lat), parseFloat(lon)];
   }
 
   function drawAttack(atk) {
     const source = [atk.lat, atk.lon];
-    const dest = getTarget(atk.port);
+    const target = getRandomTargetCoords();
 
-    const arc = L.polyline([source, dest], {
-      color: 'red',
+    const line = L.polyline([source, target], {
+      color: 'orange',
       weight: 2,
-      opacity: 0.6,
-      smoothFactor: 1
+      opacity: 0.7
     }).addTo(map);
 
+    // Punkte an Quelle und Ziel
+    L.circleMarker(source, { radius: 4, color: 'red' }).addTo(map);
+    L.circleMarker(target, { radius: 4, color: 'green' }).addTo(map);
+
+    // Linie wieder entfernen nach 4 Sekunden
     setTimeout(() => {
-      map.removeLayer(arc);
+      map.removeLayer(line);
     }, 4000);
   }
 
@@ -69,10 +66,25 @@
     isPlaying = !isPlaying;
   }
 
+  // Buttons (optional)
+  function createControls() {
+    const controls = document.createElement("div");
+    controls.innerHTML = `<button onclick="togglePlay()">▶️ / ⏸️</button>`;
+    controls.style.position = "absolute";
+    controls.style.top = "10px";
+    controls.style.left = "10px";
+    controls.style.zIndex = "999";
+    controls.style.background = "#000";
+    controls.style.color = "#0f0";
+    controls.style.padding = "10px";
+    document.body.appendChild(controls);
+  }
+
   fetch('attack-data.json')
-    .then(r => r.json())
+    .then(res => res.json())
     .then(data => {
       attacks = data;
+      createControls();
       setInterval(nextAttack, 1000);
     });
 </script>
