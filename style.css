@@ -17,3 +17,36 @@ h1 {
   border: 2px solid #0f0;
 }
 
+body {
+  margin: 0;
+  background: #111;
+  color: #0f0;
+  font-family: monospace;
+}
+
+h1 {
+  text-align: center;
+  padding: 0.5em;
+  color: #0f0;
+}
+
+#map {
+  height: 85vh;
+  width: 100%;
+  border-bottom: 2px solid #0f0;
+}
+
+#terminal {
+  background: #000;
+  color: #0f0;
+  padding: 10px;
+  height: 15vh;
+  overflow-y: auto;
+  font-size: 0.9em;
+  white-space: pre;
+  border-top: 2px solid #0f0;
+}
+
+#terminal-content {
+  animation: scroll 20s linear infinite;
+}
