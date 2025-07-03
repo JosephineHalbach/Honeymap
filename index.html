@@ -2,86 +2,165 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🛡️ Honeymap Live</title>
+  <title>Honeymap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
       height: 100%;
-      background-color: #000;
-      font-family: monospace;
+      margin: 0;
+      background-color: #111;
       color: #0f0;
-      overflow: hidden;
+      font-family: monospace;
     }
 
     #map {
-      height: calc(100% - 280px);
+      height: calc(100% - 250px);
       width: 100%;
-      z-index: 1;
     }
 
     #terminal {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 180px;
-      background: #000;
-      color: #0f0;
-      padding: 10px;
-      font-size: 0.9em;
+      height: 250px;
       overflow-y: auto;
-      border-top: 2px solid #0f0;
-      z-index: 1000;
-    }
-
-    #terminal span {
-      display: block;
-      white-space: pre-wrap;
-    }
-
-    #controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1001;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 10px;
-      border: 1px solid #0f0;
-      border-radius: 5px;
-    }
-
-    #controls button, #controls select {
       background: #000;
+      padding: 10px;
+      border-top: 2px solid #0f0;
+    }
+
+    select, button {
+      margin: 5px;
+      background: #222;
       color: #0f0;
       border: 1px solid #0f0;
-      margin: 2px;
       padding: 4px 8px;
       font-family: monospace;
     }
   </style>
 </head>
 <body>
-  <div id="controls">
-    <button onclick="togglePlay()">▶️ / ⏸️</button>
-    <label>Filter Port:
-      <select id="portFilter" onchange="setPortFilter(this.value)">
-        <option value="">Alle</option>
-        <option value="22">22 (SSH)</option>
-        <option value="80">80 (HTTP)</option>
-        <option value="443">443 (HTTPS)</option>
-        <option value="3306">3306 (MySQL)</option>
-        <option value="23">23 (Telnet)</option>
-      </select>
-    </label>
+  <div>
+    <button id="playBtn">▶️ Start</button>
+    <button id="pauseBtn">⏸️ Pause</button>
+    <select id="portFilter">
+      <option value="all">Alle Ports</option>
+      <option value="22">SSH (22)</option>
+      <option value="80">HTTP (80)</option>
+      <option value="443">HTTPS (443)</option>
+      <option value="3306">MySQL (3306)</option>
+    </select>
   </div>
-
   <div id="map"></div>
   <div id="terminal"></div>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.curve/leaflet.curve.min.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <script>
+const targetCities = {
+  22: [52.52, 13.405],
+  ...
+};
+};
+
+    let attacks = [];
+    let map, markers, animationInterval;
+    let currentIndex = 0;
+    let isPlaying = true;
+
+    const terminal = document.getElementById("terminal");
+    const portFilter = document.getElementById("portFilter");
+
+    function logToTerminal(text) {
+      const time = new Date().toLocaleTimeString();
+      terminal.innerHTML += `[${time}] ${text}<br>`;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function loadMap() {
+      map = L.map('map').setView([20, 0], 2);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      markers = L.markerClusterGroup();
+      map.addLayer(markers);
+    }
+
+   function getRandomTarget() {
+  return [
+    (Math.random() * 180 - 90).toFixed(4),
+    (Math.random() * 360 - 180).toFixed(4)
+  ];
+}
+
+
+      const marker = L.circleMarker(to, {
+        radius: 6,
+        color: getColorForPort(port),
+        fillOpacity: 0.8
+      }).addTo(markers);
+
+      setTimeout(() => {
+        map.removeLayer(curve);
+        map.removeLayer(marker);
+      }, 10000);
+    }
+
+    function getColorForPort(port) {
+      switch (port) {
+        case 22: return 'red';
+        case 80: return 'orange';
+        case 443: return 'blue';
+        case 3306: return 'purple';
+        default: return 'white';
+      }
+    }
+
+  function animateAttacks() {
+  if (!isPlaying) return;
+  for (let i = 0; i < 3; i++) {
+    const attack = attacks[(currentIndex + i) % attacks.length];
+    if (attack) {
+      const target = (attack.targetLat && attack.targetLon) 
+        ? [parseFloat(attack.targetLat), parseFloat(attack.targetLon)] 
+        : getRandomTarget();
+
+      drawAttack([attack.lat, attack.lon], target, attack.port);
+      logToTerminal(`Attack from ${attack.ip} to [${target[0]}, ${target[1]}] on port ${attack.port}`);
+    }
+  }
+  currentIndex = (currentIndex + 3) % attacks.length;
+}
+
+    }
+
+    function fetchAttackData() {
+      fetch('attack-data.json')
+        .then(response => response.json())
+        .then(data => {
+          attacks = data;
+          animationInterval = setInterval(() => {
+            if (isPlaying) {
+              const filter = portFilter.value;
+              const filtered = filter === "all" ? attacks : attacks.filter(a => a.port == filter);
+              if (filtered.length > 0) {
+                attacks = filtered;
+                animateAttacks();
+              }
+            }
+          }, 2000);
+        });
+    }
+
+    document.getElementById("playBtn").onclick = () => {
+      isPlaying = true;
+    };
+
+    document.getElementById("pauseBtn").onclick = () => {
+      isPlaying = false;
+    };
+
+    loadMap();
+    fetchAttackData();
+  </script>
 </body>
 </html>
