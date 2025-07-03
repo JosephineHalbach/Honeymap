@@ -2,20 +2,10 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 #map {
-  height: 100vh; /* ← WICHTIG: Ohne Höhe wird keine Karte angezeigt */
+  height: 100%;
   width: 100%;
-}
-
-#terminal {
-  background: #000;
-  color: #0f0;
-  padding: 10px;
-  height: 200px;
-  overflow-y: auto;
-  font-size: 0.9em;
-  white-space: pre;
-  border-top: 2px solid #0f0;
 }
