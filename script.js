@@ -1,31 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const map = L.map("map").setView([20, 0], 2);
+  const map = L.map("map", {
+    worldCopyJump: true
+  }).setView([20, 0], 2);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
+    attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
-  // Beispiel: Liste von Angriffen
-  const attacks = [
-    { from: [37.7749, -122.4194], to: [52.52, 13.405], ip: "45.76.12.103" },
-    { from: [35.6895, 139.6917], to: [48.8566, 2.3522], ip: "192.168.0.45" },
-    { from: [55.7558, 37.6173], to: [51.5074, -0.1278], ip: "66.249.66.1" },
-    // weitere generieren oder dynamisch laden
-  ];
+  // Funktion zum Generieren zufälliger Koordinaten
+  function randomCoord() {
+    return [Math.random() * 180 - 90, Math.random() * 360 - 180];
+  }
 
-  let index = 0;
-
+  // Animierte Fluglinie erzeugen
   function showAttack() {
-    const attack = attacks[index % attacks.length];
-    const line = L.polyline([attack.from, attack.to], {
+    const from = randomCoord();
+    const to = randomCoord();
+
+    const line = L.polyline([from, to], {
       color: "red",
       weight: 2,
       opacity: 0.7,
+      dashArray: "5,10"
     }).addTo(map);
 
-    setTimeout(() => map.removeLayer(line), 3000); // nach 3s wieder entfernen
-    index++;
+    setTimeout(() => map.removeLayer(line), 4000);
   }
 
-  setInterval(showAttack, 500); // alle 0,5 Sekunden
+  // Alle 300 ms ein neuer Angriff
+  setInterval(showAttack, 300);
 });
