@@ -12,26 +12,36 @@ document.addEventListener("DOMContentLoaded", () => {
     23: [55.7558, 37.6173]   // Moskau (Telnet)
   };
 
-  const attacks = [
-    { lat: 37.7749, lon: -122.4194, port: 22 },
-    { lat: 35.6895, lon: 139.6917, port: 443 },
-    { lat: 55.7558, lon: 37.6173, port: 80 },
-    { lat: 48.8566, lon: 2.3522, port: 3306 },
-    { lat: 52.52, lon: 13.405, port: 23 }
-  ];
-
-  let idx = 0;
+  function getRandomCoords() {
+    const lat = Math.random() * 180 - 90;
+    const lon = Math.random() * 360 - 180;
+    return [lat, lon];
+  }
 
   function getTarget(port) {
-    return targetCities[port] || [40.7128, -74.0060]; // Default: NYC
+    return targetCities[port] || [Math.random() * 180 - 90, Math.random() * 360 - 180];
+  }
+
+  function getArcCoords(start, end) {
+    const latlngs = [];
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const lat = start[0] + (end[0] - start[0]) * (i / steps);
+      const lon = start[1] + (end[1] - start[1]) * (i / steps) + Math.sin((Math.PI * i) / steps) * 10;
+      latlngs.push([lat, lon]);
+    }
+    return latlngs;
   }
 
   function showArrow() {
-    const atk = attacks[idx];
-    const start = [atk.lat, atk.lon];
-    const end = getTarget(atk.port);
+    const start = getRandomCoords();
+    const portOptions = Object.keys(targetCities);
+    const port = portOptions[Math.floor(Math.random() * portOptions.length)];
+    const end = getTarget(port);
 
-    const line = L.polyline([start, end], {
+    const arc = getArcCoords(start, end);
+
+    const line = L.polyline(arc, {
       color: "lime",
       weight: 2,
       opacity: 0.7,
@@ -59,10 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
       clearInterval(anim);
       map.removeLayer(line);
       map.removeLayer(decorator);
-    }, 500);
-
-    idx = (idx + 1) % attacks.length;
+    }, 800);
   }
 
-  setInterval(showArrow, 300);
+  setInterval(() => {
+    for (let i = 0; i < 3; i++) {
+      showArrow();
+    }
+  }, 300);
 });
