@@ -1,0 +1,11 @@
+[
+  {
+    "ip": "1.2.3.4",
+    "country": "Germany",
+    "timestamp": "2025-07-03T14:15:22Z",
+    "port": 22,
+    "latitude": 52.52,
+    "longitude": 13.405
+  },
+  ...
+]
